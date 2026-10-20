@@ -1,0 +1,9 @@
+{
+  "name": "taghvim-cookbooks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "Apache-2.0"
+}
