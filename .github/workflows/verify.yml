@@ -1,0 +1,46 @@
+name: public-cookbooks-verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Taghvim-dev/SDK
+          ref: 10e667a456fc89f0edc4e8510df4c0d9cec53005
+          path: SDK
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify license and pinned dependency revision
+        run: |
+          test -f LICENSE && grep -q 'Apache License' LICENSE
+          test -f NOTICE
+          node --input-type=module -e 'import fs from "node:fs";import assert from "node:assert/strict";import {execFileSync} from "node:child_process";const r=JSON.parse(fs.readFileSync("release/SDK-SOURCE.json"));const actual=execFileSync("git",["-C","SDK","rev-parse","HEAD"],{encoding:"utf8"}).trim();assert.equal(r.commit,actual);'
+      - name: Install local sibling SDK (not a registry dependency)
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund ./SDK/javascript
+      - name: Validate cookbook programs against actual SDK code
+        run: |
+          for file in javascript/*.mjs; do node --check "$file"; done
+          npm test
+          PYTHONPATH=SDK/python python -m compileall -q python
+      - name: Detect operation contract drift against checked-out SDK
+        run: |
+          node --input-type=module -e 'import fs from "node:fs";import assert from "node:assert/strict";assert.deepEqual(JSON.parse(fs.readFileSync("contracts/operation-index.json")),JSON.parse(fs.readFileSync("SDK/contracts/operation-index.json")));'
