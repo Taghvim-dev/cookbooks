@@ -23,7 +23,7 @@ jobs:
           ref: 10e667a456fc89f0edc4e8510df4c0d9cec53005
           path: SDK
           persist-credentials: false
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: '22'
       - uses: actions/setup-python@v6
