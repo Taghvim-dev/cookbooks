@@ -5,8 +5,8 @@ const contract=JSON.parse(readFileSync(new URL("../contracts/operation-index.jso
 const sdk=JSON.parse(readFileSync(new URL("../SDK/contracts/operation-index.json",import.meta.url),"utf8"));
 const release=JSON.parse(readFileSync(new URL("../release/SDK-SOURCE.json",import.meta.url),"utf8"));
 function pythonSdkVersion(text){
- const section=text.match(/^\[project\]\s*$([\s\S]*?)(?=^\[|\s*$)/m)?.[1]||"";
- return section.match(/^version\s*=\s*"([^"]+)"\s*$/m)?.[1]||null;
+ const project=text.split(/^\[project\][ \t]*$/m)[1]?.split(/^\[[^\]]+\][ \t]*$/m)[0]||"";
+ return project.match(/^[ \t]*version[ \t]*=[ \t]*"([^"]+)"[ \t]*$/m)?.[1]||null;
 }
 test("SDK and cookbooks use one immutable public operation registry",()=>{
   assert.deepEqual(contract,sdk);
@@ -50,8 +50,8 @@ test("all four cookbook flows execute against mock transport (no remote calls)",
 });
 
 test("T0 Python SDK version scanner denies deviations and ignores build tool version",()=>{
- const good='[build-system]\nrequires = ["setuptools>=68"]\n[project]\nname = "taghvim-sdk"\nversion = "2.1.0"\n[tool.test]\nversion = "9.9.9"\n';
+ const good="[build-system]\nrequires = [\"setuptools>=68\"]\n[project]\nname = \"taghvim-sdk\"\nversion = \"2.1.0\"\n[tool.test]\nversion = \"9.9.9\"\n";
  assert.equal(pythonSdkVersion(good),"2.1.0");
  assert.notEqual(pythonSdkVersion(good.replace('version = "2.1.0"','version = "0.1.0.dev0"')),"2.1.0");
- assert.equal(pythonSdkVersion('[build-system]\nversion = "2.1.0"\n'),null);
+ assert.equal(pythonSdkVersion("[build-system]\nversion = \"2.1.0\"\n"),null);
 });
