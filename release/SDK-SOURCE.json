@@ -1,8 +1,10 @@
 {
   "schema_version": 1,
   "repository": "Taghvim-dev/SDK",
-  "commit": "b0d9020a312d11a9085a86cca8e758694eb1c160",
+  "commit": "cc68bffeb1d7be5360d87d0afee356a914d2d709",
   "mode": "pinned_preview",
   "approved_for_production": false,
-  "generated_at": "2026-10-20"
+  "generated_at": "2026-10-22",
+  "contract_version": "2.1.0",
+  "sdk_package_version": "2.1.0"
 }

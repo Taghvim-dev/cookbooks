@@ -6,6 +6,13 @@ const sdk=JSON.parse(readFileSync(new URL("../SDK/contracts/operation-index.json
 const release=JSON.parse(readFileSync(new URL("../release/SDK-SOURCE.json",import.meta.url),"utf8"));
 test("SDK and cookbooks use one immutable public operation registry",()=>{
   assert.deepEqual(contract,sdk);
+  assert.equal(contract.contractVersion,"2.1.0","Cookbook/API contract drift");
+  const self=JSON.parse(readFileSync(new URL("../package.json",import.meta.url),"utf8"));
+  const sdkRoot=JSON.parse(readFileSync(new URL("../SDK/package.json",import.meta.url),"utf8"));
+  const sdkJs=JSON.parse(readFileSync(new URL("../SDK/javascript/package.json",import.meta.url),"utf8"));
+  for(const [name,v] of [["cookbooks",self.version],["SDK root",sdkRoot.version],["SDK JavaScript",sdkJs.version],["SDK manifest",release.contract_version],["SDK manifest package",release.sdk_package_version]])
+    assert.equal(v,contract.contractVersion,name+" must equal Taghvim 2.1.0");
+  assert.equal(release.approved_for_production,false,"Source parity cannot certify production");
   assert.match(release.commit,/^[a-f0-9]{40}$/);
   const operations=new Set(contract.operations.map(o=>o.method+" "+o.path));
   for(const route of ["POST /v1/dates/convert","POST /v1/business-days/add","POST /v1/schedules/preview","GET /v1/usage"])
