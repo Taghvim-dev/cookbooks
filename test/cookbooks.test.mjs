@@ -20,21 +20,21 @@ test("SDK and cookbooks use one immutable public operation registry",()=>{
     assert.equal(v,contract.contractVersion,name+" must equal Taghvim 2.1.0");
   assert.equal(release.approved_for_production,false,"Source parity cannot certify production");
   assert.match(release.commit,/^[a-f0-9]{40}$/);
-  assert.equal(release.commit,"a0fb737f061f39abfc77a432796a62217625fd5e","Cookbook SDK SHA must match latest protected source");
+  assert.equal(release.commit,"d5bda0b72687fc1c5feb2f34e27ba852d27aeaab","Cookbook SDK SHA must match latest protected source");
   const operations=new Set(contract.operations.map(o=>o.method+" "+o.path));
   for(const route of ["POST /v1/dates/convert","POST /v1/business-days/add","POST /v1/schedules/preview","GET /v1/usage"])
     assert.ok(operations.has(route));
   assert.equal(contract.operations.filter(o=>o.auth.includes("OperatorToken")).length,0);
 });
 test("all cookbook entrypoints use the public SDK and test keys only",()=>{
- for(const file of ["01-convert-date.mjs","02-business-days.mjs","03-schedule-preview.mjs","04-usage.mjs","05-api-backed-widget.mjs"]){
+ for(const file of ["01-convert-date.mjs","02-business-days.mjs","03-schedule-preview.mjs","04-usage.mjs","05-api-backed-widget.mjs","06-reconcile-dates.mjs"]){
    const s=readFileSync(new URL("../javascript/"+file,import.meta.url),"utf8");
    assert.ok(s.includes('from "@taghvim/sdk"'),file);
    assert.ok(s.includes("TAGHVIM_TEST_API_KEY"),file);
    assert.ok(!s.includes("tgv_live_"),file);
  }
 });
-test("all five cookbook flows execute against mocked transport (not proof of live API)",async()=>{
+test("all six cookbook flows execute against mocked transport (not proof of live API)",async()=>{
  const previous=globalThis.fetch,oldKey=process.env.TAGHVIM_TEST_API_KEY,oldBase=process.env.TAGHVIM_API_BASE_URL;
  const sandbox="https://taghvim-api-sandbox.example.workers.dev";
  process.env.TAGHVIM_API_BASE_URL=sandbox;
@@ -42,13 +42,13 @@ test("all five cookbook flows execute against mocked transport (not proof of liv
  const calls=[];
  globalThis.fetch=async (url,opts)=>{
    calls.push({url,opts});
-   return new Response(JSON.stringify({ok:true,source:"mock-only"}),{status:200,headers:{"content-type":"application/json","Taghvim-Request-Id":"req_mock_1"}});
+   return new Response(JSON.stringify({ok:true,source:"mock-only",date:{iso:"2026-10-07",weekday:3,business_day:true,predicted_holiday:false,holidays:[]},calendar_data_version:"fixture-v1"}),{status:200,headers:{"content-type":"application/json","Taghvim-Request-Id":"req_mock_1"}});
  };
  try {
-   const names=["01-convert-date","02-business-days","03-schedule-preview","04-usage","05-api-backed-widget"];
+   const names=["01-convert-date","02-business-days","03-schedule-preview","04-usage","05-api-backed-widget","06-reconcile-dates"];
    for(const name of names)await import("../javascript/"+name+".mjs");
    assert.deepEqual(calls.map(c=>new URL(c.url).pathname),[
-     "/v1/dates/convert","/v1/business-days/add","/v1/schedules/preview","/v1/usage","/v1/business-days/add"]);
+     "/v1/dates/convert","/v1/business-days/add","/v1/schedules/preview","/v1/usage","/v1/business-days/add","/v1/dates/convert","/v1/dates/convert"]);
    assert.ok(calls.every(x=>x.opts.headers.authorization==="Bearer tgv_test_CookbookFake01234"));
    assert.ok(calls.every(x=>new URL(x.url).origin===sandbox), "Sandbox examples must never call production");
  } finally {globalThis.fetch=previous;if(oldKey===undefined)delete process.env.TAGHVIM_TEST_API_KEY;else process.env.TAGHVIM_TEST_API_KEY=oldKey; if(oldBase===undefined)delete process.env.TAGHVIM_API_BASE_URL;else process.env.TAGHVIM_API_BASE_URL=oldBase;}
