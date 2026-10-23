@@ -33,7 +33,7 @@ test("all cookbook entrypoints use the public SDK and test keys only",()=>{
  }
 });
 test("all four cookbook flows execute against mock transport (no remote calls)",async()=>{
- const previous=globalThis.fetch,oldKey=process.env.TAGHVIM_TEST_API_KEY;
+ const previous=globalThis.fetch,oldKey=process.env.TAGHVIM_TEST_API_KEY,oldBase=process.env.TAGHVIM_API_BASE_URL;\n const sandbox="https://taghvim-api-sandbox.example.workers.dev";\n process.env.TAGHVIM_API_BASE_URL=sandbox;
  process.env.TAGHVIM_TEST_API_KEY="tgv_test_CookbookFake01234";
  const calls=[];
  globalThis.fetch=async (url,opts)=>{
@@ -45,8 +45,8 @@ test("all four cookbook flows execute against mock transport (no remote calls)",
    for(const name of names)await import("../javascript/"+name+".mjs");
    assert.deepEqual(calls.map(c=>new URL(c.url).pathname),[
      "/v1/dates/convert","/v1/business-days/add","/v1/schedules/preview","/v1/usage"]);
-   assert.ok(calls.every(x=>x.opts.headers.authorization==="Bearer tgv_test_CookbookFake01234"));
- } finally {globalThis.fetch=previous;if(oldKey===undefined)delete process.env.TAGHVIM_TEST_API_KEY;else process.env.TAGHVIM_TEST_API_KEY=oldKey;}
+   assert.ok(calls.every(x=>x.opts.headers.authorization==="Bearer tgv_test_CookbookFake01234"));\n   assert.ok(calls.every(x=>new URL(x.url).origin===sandbox), "Sandbox examples must never call production");
+ } finally {globalThis.fetch=previous;if(oldKey===undefined)delete process.env.TAGHVIM_TEST_API_KEY;else process.env.TAGHVIM_TEST_API_KEY=oldKey; if(oldBase===undefined)delete process.env.TAGHVIM_API_BASE_URL;else process.env.TAGHVIM_API_BASE_URL=oldBase;}
 });
 
 test("T0 Python SDK version scanner denies deviations and ignores build tool version",()=>{
