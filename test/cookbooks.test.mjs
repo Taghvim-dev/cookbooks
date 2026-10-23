@@ -33,7 +33,9 @@ test("all cookbook entrypoints use the public SDK and test keys only",()=>{
  }
 });
 test("all four cookbook flows execute against mock transport (no remote calls)",async()=>{
- const previous=globalThis.fetch,oldKey=process.env.TAGHVIM_TEST_API_KEY,oldBase=process.env.TAGHVIM_API_BASE_URL;\n const sandbox="https://taghvim-api-sandbox.example.workers.dev";\n process.env.TAGHVIM_API_BASE_URL=sandbox;
+ const previous=globalThis.fetch,oldKey=process.env.TAGHVIM_TEST_API_KEY,oldBase=process.env.TAGHVIM_API_BASE_URL;
+ const sandbox="https://taghvim-api-sandbox.example.workers.dev";
+ process.env.TAGHVIM_API_BASE_URL=sandbox;
  process.env.TAGHVIM_TEST_API_KEY="tgv_test_CookbookFake01234";
  const calls=[];
  globalThis.fetch=async (url,opts)=>{
