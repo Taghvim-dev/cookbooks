@@ -28,6 +28,7 @@
 | Scenario | Endpoint | Example |
 | --- | --- | --- |
 | Convert a date | `POST /v1/dates/convert` | [JavaScript](javascript/01-convert-date.mjs) |
+| Reconcile calendar dates (two authenticated conversions) | `POST /v1/dates/convert` × 2 | [JavaScript](javascript/06-reconcile-dates.mjs) |
 | Add business days | `POST /v1/business-days/add` | [JavaScript](javascript/02-business-days.mjs) |
 | Preview schedules | `POST /v1/schedules/preview` | [JavaScript](javascript/03-schedule-preview.mjs) |
 | Usage and quota errors | `GET /v1/usage` | [JavaScript](javascript/04-usage.mjs) |
