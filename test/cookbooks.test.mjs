@@ -1,6 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {spawnSync} from "node:child_process";
 const contract=JSON.parse(readFileSync(new URL("../contracts/operation-index.json",import.meta.url),"utf8"));
 const sdk=JSON.parse(readFileSync(new URL("../SDK/contracts/operation-index.json",import.meta.url),"utf8"));
 const release=JSON.parse(readFileSync(new URL("../release/SDK-SOURCE.json",import.meta.url),"utf8"));
@@ -68,4 +69,34 @@ test("widget cookbook uses canonical SDK subpath and never embeds a real key",()
  const py=readFileSync(new URL("../python/widget_deadline.py",import.meta.url),"utf8");
  assert.match(py,/from taghvim_sdk.widgets import invoke_widget/);
  assert.match(py,/TAGHVIM_TEST_API_KEY/);
+});
+
+// Regression for merged PR #12 P2: an environment variable's name is not
+// proof of a scoped test key. Execute the real recipe with a fake SDK so
+// validation is proven to happen before any client/network construction.
+test("Python widget cookbook rejects live keys before client construction",()=>{
+ const probe=`import os, runpy, sys, types
+class ForbiddenClient:
+ def __init__(self, *args, **kwargs):
+  raise AssertionError("SDK client was constructed before rejecting live key")
+sdk = types.ModuleType("taghvim_sdk")
+sdk.TaghvimClient = ForbiddenClient
+widgets = types.ModuleType("taghvim_sdk.widgets")
+widgets.invoke_widget = lambda *args, **kwargs: None
+sys.modules["taghvim_sdk"] = sdk
+sys.modules["taghvim_sdk.widgets"] = widgets
+try:
+ runpy.run_path("python/widget_deadline.py", run_name="__main__")
+except ValueError as error:
+ assert "test API key" in str(error), str(error)
+else:
+ raise AssertionError("Widget recipe accepted a non-test API key")`;
+ const run=spawnSync("python",["-c",probe],{
+   cwd:new URL("..",import.meta.url),encoding:"utf8",
+   env:{...process.env,TAGHVIM_TEST_API_KEY:"tgv_live_FORBIDDEN",TAGHVIM_API_BASE_URL:"https://api.taghvim.dev"}
+ });
+ assert.equal(run.status,0,run.stderr||run.stdout);
+ const source=readFileSync(new URL("../python/widget_deadline.py",import.meta.url),"utf8");
+ assert.ok(source.indexOf('startswith("tgv_test_")')<source.indexOf("client = TaghvimClient("),
+   "Python widget key guard must run before client creation");
 });
