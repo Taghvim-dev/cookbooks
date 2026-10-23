@@ -19,6 +19,7 @@ test("SDK and cookbooks use one immutable public operation registry",()=>{
     assert.equal(v,contract.contractVersion,name+" must equal Taghvim 2.1.0");
   assert.equal(release.approved_for_production,false,"Source parity cannot certify production");
   assert.match(release.commit,/^[a-f0-9]{40}$/);
+  assert.equal(release.commit,"5016f74c8a9997a5c095255cd378a51b7986b518","Cookbook SDK SHA must match latest protected source");
   const operations=new Set(contract.operations.map(o=>o.method+" "+o.path));
   for(const route of ["POST /v1/dates/convert","POST /v1/business-days/add","POST /v1/schedules/preview","GET /v1/usage"])
     assert.ok(operations.has(route));
