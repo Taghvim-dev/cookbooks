@@ -47,7 +47,8 @@ test("all four cookbook flows execute against mock transport (no remote calls)",
    for(const name of names)await import("../javascript/"+name+".mjs");
    assert.deepEqual(calls.map(c=>new URL(c.url).pathname),[
      "/v1/dates/convert","/v1/business-days/add","/v1/schedules/preview","/v1/usage"]);
-   assert.ok(calls.every(x=>x.opts.headers.authorization==="Bearer tgv_test_CookbookFake01234"));\n   assert.ok(calls.every(x=>new URL(x.url).origin===sandbox), "Sandbox examples must never call production");
+   assert.ok(calls.every(x=>x.opts.headers.authorization==="Bearer tgv_test_CookbookFake01234"));
+   assert.ok(calls.every(x=>new URL(x.url).origin===sandbox), "Sandbox examples must never call production");
  } finally {globalThis.fetch=previous;if(oldKey===undefined)delete process.env.TAGHVIM_TEST_API_KEY;else process.env.TAGHVIM_TEST_API_KEY=oldKey; if(oldBase===undefined)delete process.env.TAGHVIM_API_BASE_URL;else process.env.TAGHVIM_API_BASE_URL=oldBase;}
 });
 
