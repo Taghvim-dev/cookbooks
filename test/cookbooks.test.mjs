@@ -62,8 +62,8 @@ test("T0 Python SDK version scanner denies deviations and ignores build tool ver
 
 test("widget cookbook uses canonical SDK subpath and never embeds a real key",()=>{
  const s=readFileSync(new URL("../javascript/05-api-backed-widget.mjs",import.meta.url),"utf8");
- assert.match(s,/from "@taghvim\\/sdk\\/widgets"/);
- assert.match(s,/invokeWidget\\(client,"deadline-calculator"/);
+ assert.ok(s.includes('from "@taghvim/sdk/widgets"'));
+ assert.ok(s.includes('invokeWidget(client,"deadline-calculator"'));
  assert.doesNotMatch(s,/tgv_(test|live)_[A-Za-z0-9_-]+/);
  const py=readFileSync(new URL("../python/widget_deadline.py",import.meta.url),"utf8");
  assert.match(py,/from taghvim_sdk.widgets import invoke_widget/);
