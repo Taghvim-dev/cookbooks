@@ -32,3 +32,7 @@ Only run external calls after obtaining a test key from [Taghvim.dev](https://ta
 Every change must match the [canonical operation index](contracts/operation-index.json), the corresponding [SDK version](https://github.com/Taghvim-dev/SDK) and the API release. CI tests **real example modules with mocked network responses**, checks the sibling SDK's operation manifest and blocks drift. [Release and evidence policy](docs/RELEASE-CHECKLIST.md).
 
 Apache-2.0: [LICENSE](LICENSE). [NOTICE](NOTICE) and [Security](SECURITY.md). Names and logos remain separate trademarks.
+
+## Verified Sandbox target (no production side effects)
+
+The examples default to `https://api.taghvim.dev` for an **issued** test key. For the isolated owner-attested Cloudflare Sandbox, set `TAGHVIM_API_BASE_URL=https://taghvim-api-sandbox.<account-subdomain>.workers.dev` alongside the separately issued Sandbox test key. The clients validate HTTPS; never use a live key, operator token, or production D1. A copied example alone is not proof of successful authenticated developer onboarding.
