@@ -49,6 +49,7 @@ jobs:
           for file in javascript/*.mjs; do node --check "$file"; done
           npm test
           PYTHONPATH=SDK/python python -m compileall -q python
+          PYTHONPATH=SDK/python python -m unittest discover -s SDK/python/tests -v
       - name: Detect operation contract drift against checked-out SDK
         run: |
           node --input-type=module -e 'import fs from "node:fs";import assert from "node:assert/strict";assert.deepEqual(JSON.parse(fs.readFileSync("contracts/operation-index.json")),JSON.parse(fs.readFileSync("SDK/contracts/operation-index.json")));'
