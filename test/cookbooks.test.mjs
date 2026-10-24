@@ -100,3 +100,13 @@ else:
  assert.ok(source.indexOf('startswith("tgv_test_")')<source.indexOf("client = TaghvimClient("),
    "Python widget key guard must run before client creation");
 });
+
+test("Python Reconciliation cookbook uses real SDK, two canonical API operations and test key only",()=>{
+ const s=readFileSync(new URL("../python/reconcile_dates.py",import.meta.url),"utf8");
+ assert.match(s,/from taghvim_sdk\.widgets import invoke_widget/);
+ assert.match(s,/invoke_widget\(client, "date-reconciliation"/);
+ assert.match(s,/TAGHVIM_TEST_API_KEY/);
+ assert.ok(s.indexOf('startswith("tgv_test_")') < s.indexOf("client = TaghvimClient("),
+  "Reject a live key before any API client is built");
+ assert.doesNotMatch(s,/tgv_live_[A-Za-z0-9_-]+/);
+});
