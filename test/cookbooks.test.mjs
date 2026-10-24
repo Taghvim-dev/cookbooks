@@ -20,7 +20,10 @@ test("SDK and cookbooks use one immutable public operation registry",()=>{
     assert.equal(v,contract.contractVersion,name+" must equal Taghvim 2.1.0");
   assert.equal(release.approved_for_production,false,"Source parity cannot certify production");
   assert.match(release.commit,/^[a-f0-9]{40}$/);
-  assert.equal(release.commit,"d5bda0b72687fc1c5feb2f34e27ba852d27aeaab","Cookbook SDK SHA must match latest protected source");
+  // Verify the pinned source against the actual SDK checkout, never a frozen SHA in test code.
+  const sdkCheckout=spawnSync("git",["-C","SDK","rev-parse","HEAD"],{encoding:"utf8"});
+  assert.equal(sdkCheckout.status,0,"Pinned SDK checkout must be present in conformance CI");
+  assert.equal(release.commit,sdkCheckout.stdout.trim(),"SDK source differs from canonical manifest");
   const operations=new Set(contract.operations.map(o=>o.method+" "+o.path));
   for(const route of ["POST /v1/dates/convert","POST /v1/business-days/add","POST /v1/schedules/preview","GET /v1/usage"])
     assert.ok(operations.has(route));
