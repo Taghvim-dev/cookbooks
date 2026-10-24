@@ -25,7 +25,7 @@ test("SDK and cookbooks use one immutable public operation registry",()=>{
   assert.equal(sdkCheckout.status,0,"Pinned SDK checkout must be present in conformance CI");
   assert.equal(release.commit,sdkCheckout.stdout.trim(),"SDK source differs from canonical manifest");
   const operations=new Set(contract.operations.map(o=>o.method+" "+o.path));
-  for(const route of ["POST /v1/dates/convert","POST /v1/business-days/add","POST /v1/schedules/preview","GET /v1/usage"])
+  for(const route of ["POST /v1/dates/convert","POST /v1/business-days/add","POST /v1/schedules/preview","GET /v1/usage","POST /v1/dates/reconcile"])
     assert.ok(operations.has(route));
   assert.equal(contract.operations.filter(o=>o.auth.includes("OperatorToken")).length,0);
 });
@@ -45,13 +45,19 @@ test("all six cookbook flows execute against mocked transport (not proof of live
  const calls=[];
  globalThis.fetch=async (url,opts)=>{
    calls.push({url,opts});
-   return new Response(JSON.stringify({ok:true,source:"mock-only",date:{iso:"2026-10-07",weekday:3,business_day:true,predicted_holiday:false,holidays:[]},calendar_data_version:"fixture-v1"}),{status:200,headers:{"content-type":"application/json","Taghvim-Request-Id":"req_mock_1"}});
+   const path=new URL(url).pathname;
+   const mocked=path==="/v1/dates/reconcile"
+    ?{status:"equivalent",equivalent:true,scope:"calendar_day_not_instant",day_delta:0,
+       left:{date:{iso:"2026-10-07"}},right:{date:{iso:"2026-10-07"}},
+       evidence:{operation:"POST /v1/dates/reconcile",request_ids:["req_mock_1"],meter_units:2,calendar_data_versions:["fixture-v1","fixture-v1"]}}
+    :{ok:true,source:"mock-only",date:{iso:"2026-10-07",weekday:3,business_day:true,predicted_holiday:false,holidays:[]},calendar_data_version:"fixture-v1"};
+   return new Response(JSON.stringify(mocked),{status:200,headers:{"content-type":"application/json","Taghvim-Request-Id":"req_mock_1"}});
  };
  try {
    const names=["01-convert-date","02-business-days","03-schedule-preview","04-usage","05-api-backed-widget","06-reconcile-dates"];
    for(const name of names)await import("../javascript/"+name+".mjs");
    assert.deepEqual(calls.map(c=>new URL(c.url).pathname),[
-     "/v1/dates/convert","/v1/business-days/add","/v1/schedules/preview","/v1/usage","/v1/business-days/add","/v1/dates/convert","/v1/dates/convert"]);
+     "/v1/dates/convert","/v1/business-days/add","/v1/schedules/preview","/v1/usage","/v1/business-days/add","/v1/dates/reconcile"]);
    assert.ok(calls.every(x=>x.opts.headers.authorization==="Bearer tgv_test_CookbookFake01234"));
    assert.ok(calls.every(x=>new URL(x.url).origin===sandbox), "Sandbox examples must never call production");
  } finally {globalThis.fetch=previous;if(oldKey===undefined)delete process.env.TAGHVIM_TEST_API_KEY;else process.env.TAGHVIM_TEST_API_KEY=oldKey; if(oldBase===undefined)delete process.env.TAGHVIM_API_BASE_URL;else process.env.TAGHVIM_API_BASE_URL=oldBase;}
@@ -104,7 +110,7 @@ else:
    "Python widget key guard must run before client creation");
 });
 
-test("Python Reconciliation cookbook uses real SDK, two canonical API operations and test key only",()=>{
+test("Python Reconciliation cookbook uses one native governed API operation and test key only",()=>{
  const s=readFileSync(new URL("../python/reconcile_dates.py",import.meta.url),"utf8");
  assert.match(s,/from taghvim_sdk\.widgets import invoke_widget/);
  assert.match(s,/invoke_widget\(client, "date-reconciliation"/);
