@@ -119,3 +119,13 @@ test("Python Reconciliation cookbook uses one native governed API operation and 
   "Reject a live key before any API client is built");
  assert.doesNotMatch(s,/tgv_live_[A-Za-z0-9_-]+/);
 });
+
+test("MCP cookbook uses the exact pinned public SDK and never a fabricated MCP response",()=>{
+ const s=readFileSync(new URL("../javascript/08-mcp-reconcile.mjs",import.meta.url),"utf8");
+ assert.ok(s.includes('from "@taghvim/sdk/mcp"'));
+ assert.ok(s.includes("createTaghvimMcpBridge({client})"));
+ assert.ok(s.includes("taghvim_reconcileDates"));
+ assert.ok(s.includes("TAGHVIM_TEST_API_KEY"));
+ assert.ok(!s.includes("tgv_live_"));
+ assert.ok(!s.includes("admin_token"));
+});
