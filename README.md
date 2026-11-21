@@ -58,3 +58,24 @@ Apache-2.0: [LICENSE](LICENSE). [NOTICE](NOTICE) and [Security](SECURITY.md). Na
 ## Verified Sandbox target (no production side effects)
 
 The examples default to `https://api.taghvim.dev` for an **issued** test key. For the isolated owner-attested Cloudflare Sandbox, set `TAGHVIM_API_BASE_URL=https://taghvim-api-sandbox.<account-subdomain>.workers.dev` alongside the separately issued Sandbox test key. The clients validate HTTPS; never use a live key, operator token, or production D1. A copied example alone is not proof of successful authenticated developer onboarding.
+
+## Public Handle discovery and request-only activation
+
+The source for this preview is pinned to the exact SDK commit. An anonymous public search (API must already support the reviewed contract):
+
+```bash
+node javascript/09-public-handle-discovery.mjs
+```
+
+Handle registration is closed by default. A verified Workspace Owner can submit a *request* for an existing owned calendar. This command never activates the handle:
+
+```bash
+export TAGHVIM_TEST_API_KEY=your-issued-test-key
+export TAGHVIM_SUBMIT_HANDLE_REQUEST=YES_I_AM_WORKSPACE_OWNER
+export TAGHVIM_HANDLE=@mycampus
+export TAGHVIM_CALENDAR_ID=cal_my_campus_001
+export TAGHVIM_HANDLE_PURPOSE="Verified institution public calendar"
+node javascript/10-owner-handle-request.mjs
+```
+
+Public channels @music, @theater, @exhibition are reserved and never synthesized. Production activation still requires first-party Superadmin, an actually published source and a SHA-bound protected GA release.
