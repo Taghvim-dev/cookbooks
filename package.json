@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "prepare": "node scripts/t0-install-hook.mjs",
+    "t0:preflight": "npm test"
   },
   "license": "Apache-2.0",
   "version": "2.1.0"
