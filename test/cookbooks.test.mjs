@@ -129,3 +129,33 @@ test("MCP cookbook uses the exact pinned public SDK and never a fabricated MCP r
  assert.ok(!s.includes("tgv_live_"));
  assert.ok(!s.includes("admin_token"));
 });
+
+test("T0 public Handle cookbook uses the pinned SDK without sending a secret",async()=>{
+ const oldFetch=globalThis.fetch;
+ const oldBase=process.env.TAGHVIM_API_BASE_URL;
+ process.env.TAGHVIM_API_BASE_URL="https://taghvim-api-sandbox.example.workers.dev";
+ let observed;
+ globalThis.fetch=async(url,opt)=>{
+  observed={url,opt};
+  return new Response(JSON.stringify({data:[],count:0}),{status:200,headers:{
+   "content-type":"application/json","Taghvim-Request-Id":"req_cookbook_handle"}
+  });
+ };
+ try{
+  await import("../javascript/09-public-handle-discovery.mjs");
+  assert.equal(new URL(observed.url).pathname,"/v1/public/handles");
+  assert.equal(observed.opt.headers.authorization,undefined);
+  assert.equal(observed.opt.method,"GET");
+ }finally{
+  globalThis.fetch=oldFetch;
+  if(oldBase===undefined)delete process.env.TAGHVIM_API_BASE_URL;
+  else process.env.TAGHVIM_API_BASE_URL=oldBase;
+ }
+ const src=readFileSync(new URL("../javascript/10-owner-handle-request.mjs",import.meta.url),"utf8");
+ assert.match(src,/YES_I_AM_WORKSPACE_OWNER/);
+ assert.ok(src.indexOf("TAGHVIM_SUBMIT_HANDLE_REQUEST")<src.indexOf("new TaghvimClient("));
+ assert.ok(src.indexOf("TAGHVIM_TEST_API_KEY")<src.indexOf("new TaghvimClient("));
+ assert.match(src,/platform_superadmin_required/);
+ const required=new Set(contract.operations.map(o=>o.operationId));
+ assert.ok(required.has("applyHandle")&&required.has("discoverHandles"));
+});
