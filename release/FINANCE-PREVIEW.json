@@ -1,0 +1,13 @@
+{
+  "kind": "taghvim.finance.cookbook",
+  "description": "Nonpayment, preview-only global financial business-day calculation",
+  "operation": "getFinanceBusinessDayQuote",
+  "uses_sdk_source_sha": "a99e74d768b2f435961c1f1f40d8ee6069dc5d2d",
+  "required_env": [
+    "TAGHVIM_TEST_API_KEY"
+  ],
+  "country_coverage": 249,
+  "official_holiday_coverage": "source_admission_required_per_market",
+  "regulatory_settlement_certified": false,
+  "financial_decision_allowed": false
+}
