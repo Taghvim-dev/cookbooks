@@ -9,8 +9,8 @@ test("T0 portfolio cookbook is tied to the exact reviewed SDK 67-op cohort, neve
  assert.equal(pinned.repository,"Taghvim-dev/SDK");
  assert.equal(pinned.contract_version,index.contractVersion,"SDK pin must track canonical contract");
  assert.equal(pinned.approved_for_production,false);
- assert.equal(index.openApiGitBlobSHA,"c7d29e88cba281b34c2dbf171c5edda5120fa57b");
- assert.equal(index.operations.length,69);
+ assert.equal(index.openApiGitBlobSHA,"1aac9a1ff153ac99ae51797a0921e74d4e34dd6c");
+ assert.equal(index.operations.length,70);
  for(const [id,method,path,auth] of [
   ["listFinanceCountries","GET","/v1/finance/countries",[]],
   ["getFinanceBusinessDayQuote","POST","/v1/finance/business-days/quote",["ApiKey"]]

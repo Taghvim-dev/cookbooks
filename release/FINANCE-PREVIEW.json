@@ -2,7 +2,7 @@
   "kind": "taghvim.finance.cookbook",
   "description": "Nonpayment, preview-only global financial business-day calculation",
   "operation": "getFinanceBusinessDayQuote",
-  "uses_sdk_source_sha": "a99e74d768b2f435961c1f1f40d8ee6069dc5d2d",
+  "uses_sdk_source_sha": "75d01981b97a0bfe33896bd728b24dfd9184751d",
   "required_env": [
     "TAGHVIM_TEST_API_KEY"
   ],
